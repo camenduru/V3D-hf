@@ -80,6 +80,7 @@ def do_sample(
     value_dict["cond_frames"] += 0.05 * torch.randn_like(value_dict["cond_frames"])
     value_dict["cond_aug"] = 0.05
 
+    print(device)
     with torch.no_grad():
         with torch.autocast(device):
             batch, batch_uc = get_batch(
