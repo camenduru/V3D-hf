@@ -276,6 +276,7 @@ if __name__ == "__main__":
             return
         import wget
 
+        path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
         wget.download(url, out=str(path))
 
