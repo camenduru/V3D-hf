@@ -149,7 +149,7 @@ def change_model_params(model, min_cfg, max_cfg):
 
 @spaces.GPU
 def launch(device="cuda", port=4321, share=False):
-    model_config = "scripts/pub/configs/V3D_512.yaml"
+    model_config = "./scripts/pub/configs/V3D_512.yaml"
     num_frames = OmegaConf.load(
         model_config
     ).model.params.sampler_config.params.guider_config.params.num_frames
@@ -159,7 +159,7 @@ def launch(device="cuda", port=4321, share=False):
     output_folder = "outputs/V3D_512"
 
     sd = load_safetensors("./ckpts/svd_xt.safetensors")
-    clip_model_config = OmegaConf.load("configs/embedder/clip_image.yaml")
+    clip_model_config = OmegaConf.load("./configs/embedder/clip_image.yaml")
     clip_model = instantiate_from_config(clip_model_config).eval()
     clip_sd = dict()
     for k, v in sd.items():
@@ -168,7 +168,7 @@ def launch(device="cuda", port=4321, share=False):
     clip_model.load_state_dict(clip_sd)
     clip_model = clip_model.to(device)
 
-    ae_model_config = OmegaConf.load("configs/ae/video.yaml")
+    ae_model_config = OmegaConf.load("./configs/ae/video.yaml")
     ae_model = instantiate_from_config(ae_model_config).eval()
     encoder_sd = dict()
     for k, v in sd.items():
