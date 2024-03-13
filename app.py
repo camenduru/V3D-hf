@@ -137,7 +137,7 @@ def do_sample(
                 .numpy()
                 .astype(np.uint8)
             )
-            write_video(video_path, frames, fps=6)
+            # write_video(video_path, frames, fps=6)
             writer = cv2.VideoWriter(
                 video_path,
                 cv2.VideoWriter_fourcc(*"MP4V"),
