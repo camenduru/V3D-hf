@@ -27,7 +27,8 @@ from pathlib import Path
 import spaces
 from huggingface_hub import hf_hub_download
 import imageio
-import cv2
+
+# import cv2
 
 
 @spaces.GPU
