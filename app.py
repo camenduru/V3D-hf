@@ -147,6 +147,7 @@ def change_model_params(model, min_cfg, max_cfg):
     model.sampler.guider.min_scale = min_cfg
 
 
+@spaces.GPU
 def launch(device="cuda", port=4321, share=False):
     model_config = "scripts/pub/configs/V3D_512.yaml"
     num_frames = OmegaConf.load(
