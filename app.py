@@ -291,4 +291,5 @@ if __name__ == "__main__":
         "ckpts/V3D_512.ckpt", "https://huggingface.co/heheyas/V3D/resolve/main/V3D.ckpt"
     )
 
+    test = OmegaConf.load("./scripts/pub/configs/V3D_512.yaml")
     launch(opt.device, opt.port, opt.share)
