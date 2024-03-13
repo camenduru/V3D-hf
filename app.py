@@ -137,16 +137,16 @@ def do_sample(
                 .astype(np.uint8)
             )
             # write_video(video_path, frames, fps=6)
-            writer = cv2.VideoWriter(
-                video_path,
-                cv2.VideoWriter_fourcc(*"MP4V"),
-                6,
-                (frames.shape[-1], frames.shape[-2]),
-            )
-            for fr in frames:
-                writer.write(cv2.cvtColor(fr, cv2.COLOR_RGB2BGR))
-            writer.release()
-            # imageio.mimwrite(video_path, frames, fps=6)
+            # writer = cv2.VideoWriter(
+            #     video_path,
+            #     cv2.VideoWriter_fourcc(*"MP4V"),
+            #     6,
+            #     (frames.shape[-1], frames.shape[-2]),
+            # )
+            # for fr in frames:
+            #     writer.write(cv2.cvtColor(fr, cv2.COLOR_RGB2BGR))
+            # writer.release()
+            imageio.mimwrite(video_path, frames)
 
     return video_path
 
