@@ -236,8 +236,8 @@ with gr.Blocks(title="V3D", theme=gr.themes.Monochrome()) as demo:
         outputs=[output_video],
     )
     def _(image, border_ratio, min_guidance, max_guidance, decoding_t):
-        model.sampler.guider.max_scale = max_cfg
-        model.sampler.guider.min_scale = min_cfg
+        model.sampler.guider.max_scale = max_guidance
+        model.sampler.guider.min_scale = min_guidance
         return do_sample(
             image,
             num_frames,
