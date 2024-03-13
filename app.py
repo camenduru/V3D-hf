@@ -187,9 +187,14 @@ ae_model.load_state_dict(encoder_sd)
 ae_model = ae_model.to(device)
 rembg_session = rembg.new_session()
 
-model_config.model.params.ckpt_path = V3D_ckpt_path
 model, _ = load_model(
-    model_config, device, num_frames, num_steps, min_cfg=3.5, max_cfg=3.5
+    model_config,
+    device,
+    num_frames,
+    num_steps,
+    min_cfg=3.5,
+    max_cfg=3.5,
+    ckpt_path=V3D_ckpt_path,
 )
 model = model.to(device)
 
