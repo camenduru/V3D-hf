@@ -24,8 +24,10 @@ import os
 from glob import glob
 from mediapy import write_video
 from pathlib import Path
+import spaces
 
 
+@spaces.GPU
 def do_sample(
     image,
     model,
