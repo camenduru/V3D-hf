@@ -82,7 +82,7 @@ def do_sample(
 
     print(device)
     with torch.no_grad():
-        with torch.autocast(device):
+        with torch.autocast(device_type="cuda"):
             batch, batch_uc = get_batch(
                 get_unique_embedder_keys_from_conditioner(model.conditioner),
                 value_dict,
@@ -139,7 +139,7 @@ def do_sample(
     return video_path
 
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # download
 V3D_ckpt_path = hf_hub_download(repo_id="heheyas/V3D", filename="V3D.ckpt")
