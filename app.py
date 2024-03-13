@@ -272,6 +272,7 @@ if __name__ == "__main__":
     opt = parser.parse_args()
 
     test = OmegaConf.load("./scripts/pub/configs/V3D_512.yaml")
+    print(test)
 
     def download_if_need(path, url):
         if Path(path).exists():
@@ -282,12 +283,12 @@ if __name__ == "__main__":
         path.parent.mkdir(parents=True, exist_ok=True)
         wget.download(url, out=str(path))
 
-    download_if_need(
-        "ckpts/svd_xt.safetensors",
-        "https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt/resolve/main/svd_xt.safetensors",
-    )
-    download_if_need(
-        "ckpts/V3D_512.ckpt", "https://huggingface.co/heheyas/V3D/resolve/main/V3D.ckpt"
-    )
+    # download_if_need(
+    #     "ckpts/svd_xt.safetensors",
+    #     "https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt/resolve/main/svd_xt.safetensors",
+    # )
+    # download_if_need(
+    #     "ckpts/V3D_512.ckpt", "https://huggingface.co/heheyas/V3D/resolve/main/V3D.ckpt"
+    # )
 
     launch(opt.device, opt.share)
