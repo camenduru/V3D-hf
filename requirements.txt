@@ -41,3 +41,5 @@ streamlit-keyup==0.2.0
 mediapy
 tyro
 wget
+rembg
+kiui
