@@ -31,16 +31,11 @@ from huggingface_hub import hf_hub_download
 @spaces.GPU
 def do_sample(
     image,
-    model,
-    clip_model,
-    ae_model,
-    device,
     num_frames,
     num_steps,
     decoding_t,
     border_ratio,
     ignore_alpha,
-    rembg_session,
     output_folder,
 ):
     # if image.mode == "RGBA":
@@ -250,16 +245,11 @@ with gr.Blocks(title="V3D", theme=gr.themes.Monochrome()) as demo:
         change_model_params(model, min_guidance, max_guidance)
         return do_sample(
             image,
-            model,
-            clip_model,
-            ae_model,
-            device,
             num_frames,
             num_steps,
             int(decoding_t),
             border_ratio,
             False,
-            rembg_session,
             output_folder,
         )
 
