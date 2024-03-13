@@ -44,3 +44,5 @@ wget
 rembg
 kiui
 spaces
+imageio==2.19.3
+imageio-ffmpeg==0.4.7
