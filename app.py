@@ -26,6 +26,7 @@ from mediapy import write_video
 from pathlib import Path
 import spaces
 from huggingface_hub import hf_hub_download
+import imageio
 
 
 @spaces.GPU
@@ -134,7 +135,8 @@ def do_sample(
                 .numpy()
                 .astype(np.uint8)
             )
-            write_video(video_path, frames, fps=6)
+            # write_video(video_path, frames, fps=6)
+            imageio.mimwrite(video_path, frames, fps=6)
 
     return video_path
 
