@@ -25,7 +25,6 @@ from glob import glob
 from mediapy import write_video
 from pathlib import Path
 import spaces
-from huggingface_hub import hf_hub_download
 
 
 @spaces.GPU
@@ -143,120 +142,153 @@ def do_sample(
     return video_path
 
 
-@spaces.GPU
 def change_model_params(model, min_cfg, max_cfg):
     model.sampler.guider.max_scale = max_cfg
     model.sampler.guider.min_scale = min_cfg
 
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+@spaces.GPU
+def launch(device="cuda", share=False):
+    model_config = "./scripts/pub/configs/V3D_512.yaml"
+    num_frames = OmegaConf.load(
+        model_config
+    ).model.params.sampler_config.params.guider_config.params.num_frames
+    print("Detected num_frames:", num_frames)
+    # num_steps = default(num_steps, 25)
+    num_steps = 25
+    output_folder = "outputs/V3D_512"
 
-# download
-V3D_ckpt_path = hf_hub_download(repo_id="heheyas/V3D", filename="V3D.ckpt")
-svd_xt_ckpt_path = hf_hub_download(
-    repo_id="stabilityai/stable-video-diffusion-img2vid-xt",
-    filename="svd_xt.safetensors",
-)
+    sd = load_safetensors("./ckpts/svd_xt.safetensors")
+    clip_model_config = OmegaConf.load("./configs/embedder/clip_image.yaml")
+    clip_model = instantiate_from_config(clip_model_config).eval()
+    clip_sd = dict()
+    for k, v in sd.items():
+        if "conditioner.embedders.0" in k:
+            clip_sd[k.replace("conditioner.embedders.0.", "")] = v
+    clip_model.load_state_dict(clip_sd)
+    clip_model = clip_model.to(device)
 
-model_config = "./scripts/pub/configs/V3D_512.yaml"
-num_frames = OmegaConf.load(
-    model_config
-).model.params.sampler_config.params.guider_config.params.num_frames
-print("Detected num_frames:", num_frames)
-# num_steps = default(num_steps, 25)
-num_steps = 25
-output_folder = "outputs/V3D_512"
+    ae_model_config = OmegaConf.load("./configs/ae/video.yaml")
+    ae_model = instantiate_from_config(ae_model_config).eval()
+    encoder_sd = dict()
+    for k, v in sd.items():
+        if "first_stage_model" in k:
+            encoder_sd[k.replace("first_stage_model.", "")] = v
+    ae_model.load_state_dict(encoder_sd)
+    ae_model = ae_model.to(device)
+    rembg_session = rembg.new_session()
 
-sd = load_safetensors(svd_xt_ckpt_path)
-clip_model_config = OmegaConf.load("./configs/embedder/clip_image.yaml")
-clip_model = instantiate_from_config(clip_model_config).eval()
-clip_sd = dict()
-for k, v in sd.items():
-    if "conditioner.embedders.0" in k:
-        clip_sd[k.replace("conditioner.embedders.0.", "")] = v
-clip_model.load_state_dict(clip_sd)
-clip_model = clip_model.to(device)
-
-ae_model_config = OmegaConf.load("./configs/ae/video.yaml")
-ae_model = instantiate_from_config(ae_model_config).eval()
-encoder_sd = dict()
-for k, v in sd.items():
-    if "first_stage_model" in k:
-        encoder_sd[k.replace("first_stage_model.", "")] = v
-ae_model.load_state_dict(encoder_sd)
-ae_model = ae_model.to(device)
-rembg_session = rembg.new_session()
-
-model_config.model.params.ckpt_path = V3D_ckpt_path
-model, _ = load_model(
-    model_config, device, num_frames, num_steps, min_cfg=3.5, max_cfg=3.5
-)
-model = model.to(device)
-
-with gr.Blocks(title="V3D", theme=gr.themes.Monochrome()) as demo:
-    with gr.Row(equal_height=True):
-        with gr.Column():
-            input_image = gr.Image(value=None, label="Input Image")
-
-            border_ratio_slider = gr.Slider(
-                value=0.3,
-                label="Border Ratio",
-                minimum=0.05,
-                maximum=0.5,
-                step=0.05,
-            )
-            decoding_t_slider = gr.Slider(
-                value=1,
-                label="Number of Decoding frames",
-                minimum=1,
-                maximum=num_frames,
-                step=1,
-            )
-            min_guidance_slider = gr.Slider(
-                value=3.5,
-                label="Min CFG Value",
-                minimum=0.05,
-                maximum=0.5,
-                step=0.05,
-            )
-            max_guidance_slider = gr.Slider(
-                value=3.5,
-                label="Max CFG Value",
-                minimum=0.05,
-                maximum=0.5,
-                step=0.05,
-            )
-            run_button = gr.Button(value="Run V3D")
-
-        with gr.Column():
-            output_video = gr.Video(value=None, label="Output Orbit Video")
-
-    @run_button.click(
-        inputs=[
-            input_image,
-            border_ratio_slider,
-            min_guidance_slider,
-            max_guidance_slider,
-            decoding_t_slider,
-        ],
-        outputs=[output_video],
+    model, _ = load_model(
+        model_config, device, num_frames, num_steps, min_cfg=3.5, max_cfg=3.5
     )
-    def _(image, border_ratio, min_guidance, max_guidance, decoding_t):
-        change_model_params(model, min_guidance, max_guidance)
-        return do_sample(
-            image,
-            model,
-            clip_model,
-            ae_model,
-            device,
-            num_frames,
-            num_steps,
-            int(decoding_t),
-            border_ratio,
-            False,
-            rembg_session,
-            output_folder,
+
+    with gr.Blocks(title="V3D", theme=gr.themes.Monochrome()) as demo:
+        with gr.Row(equal_height=True):
+            with gr.Column():
+                input_image = gr.Image(value=None, label="Input Image")
+
+                border_ratio_slider = gr.Slider(
+                    value=0.3,
+                    label="Border Ratio",
+                    minimum=0.05,
+                    maximum=0.5,
+                    step=0.05,
+                )
+                decoding_t_slider = gr.Slider(
+                    value=1,
+                    label="Number of Decoding frames",
+                    minimum=1,
+                    maximum=num_frames,
+                    step=1,
+                )
+                min_guidance_slider = gr.Slider(
+                    value=3.5,
+                    label="Min CFG Value",
+                    minimum=0.05,
+                    maximum=0.5,
+                    step=0.05,
+                )
+                max_guidance_slider = gr.Slider(
+                    value=3.5,
+                    label="Max CFG Value",
+                    minimum=0.05,
+                    maximum=0.5,
+                    step=0.05,
+                )
+                run_button = gr.Button(value="Run V3D")
+
+            with gr.Column():
+                output_video = gr.Video(value=None, label="Output Orbit Video")
+
+        @run_button.click(
+            inputs=[
+                input_image,
+                border_ratio_slider,
+                min_guidance_slider,
+                max_guidance_slider,
+                decoding_t_slider,
+            ],
+            outputs=[output_video],
         )
+        def _(image, border_ratio, min_guidance, max_guidance, decoding_t):
+            change_model_params(model, min_guidance, max_guidance)
+            return do_sample(
+                image,
+                model,
+                clip_model,
+                ae_model,
+                device,
+                num_frames,
+                num_steps,
+                int(decoding_t),
+                border_ratio,
+                False,
+                rembg_session,
+                output_folder,
+            )
+
+    # do_sample(
+    #     np.asarray(Image.open("assets/baby_yoda.png")),
+    #     model,
+    #     clip_model,
+    #     ae_model,
+    #     device,
+    #     num_frames,
+    #     num_steps,
+    #     1,
+    #     0.3,
+    #     False,
+    #     rembg_session,
+    #     output_folder,
+    # )
+    demo.launch(inbrowser=True, inline=False, share=share, show_error=True)
 
 
-demo.launch()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--device", type=str, default="cuda")
+    parser.add_argument("--share", action="store_true")
+
+    opt = parser.parse_args()
+
+    test = OmegaConf.load("./scripts/pub/configs/V3D_512.yaml")
+    print(test)
+
+    def download_if_need(path, url):
+        if Path(path).exists():
+            return
+        import wget
+
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        wget.download(url, out=str(path))
+
+    # download_if_need(
+    #     "ckpts/svd_xt.safetensors",
+    #     "https://huggingface.co/stabilityai/stable-video-diffusion-img2vid-xt/resolve/main/svd_xt.safetensors",
+    # )
+    # download_if_need(
+    #     "ckpts/V3D_512.ckpt", "https://huggingface.co/heheyas/V3D/resolve/main/V3D.ckpt"
+    # )
+
+    launch(opt.device, opt.share)
