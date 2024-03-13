@@ -274,6 +274,8 @@ if __name__ == "__main__":
     test = OmegaConf.load("./scripts/pub/configs/V3D_512.yaml")
     print(test)
 
+    exit(0)
+
     def download_if_need(path, url):
         if Path(path).exists():
             return
