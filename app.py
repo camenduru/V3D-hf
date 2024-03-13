@@ -148,7 +148,7 @@ def change_model_params(model, min_cfg, max_cfg):
 
 
 @spaces.GPU
-def launch(device="cuda", port=4321, share=False):
+def launch(device="cuda", share=False):
     model_config = "./scripts/pub/configs/V3D_512.yaml"
     num_frames = OmegaConf.load(
         model_config
@@ -261,18 +261,17 @@ def launch(device="cuda", port=4321, share=False):
     #     rembg_session,
     #     output_folder,
     # )
-    demo.launch(
-        inbrowser=True, inline=False, server_port=port, share=share, show_error=True
-    )
+    demo.launch(inbrowser=True, inline=False, share=share, show_error=True)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--port", type=int, default=4321)
     parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--share", action="store_true")
 
     opt = parser.parse_args()
+
+    test = OmegaConf.load("./scripts/pub/configs/V3D_512.yaml")
 
     def download_if_need(path, url):
         if Path(path).exists():
@@ -291,5 +290,4 @@ if __name__ == "__main__":
         "ckpts/V3D_512.ckpt", "https://huggingface.co/heheyas/V3D/resolve/main/V3D.ckpt"
     )
 
-    test = OmegaConf.load("./scripts/pub/configs/V3D_512.yaml")
-    launch(opt.device, opt.port, opt.share)
+    launch(opt.device, opt.share)
