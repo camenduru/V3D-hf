@@ -139,7 +139,7 @@ def do_sample(
     return video_path
 
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # download
 V3D_ckpt_path = hf_hub_download(repo_id="heheyas/V3D", filename="V3D.ckpt")
