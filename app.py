@@ -140,7 +140,7 @@ def do_sample(
             # write_video(video_path, frames, fps=6)
             writer = cv2.VideoWriter(
                 video_path,
-                cv2.VideoWriter_fourcc(*"MP4V"),
+                cv2.VideoWriter_fourcc("m", "p", "4", "v"),
                 6,
                 (frames.shape[-1], frames.shape[-2]),
             )
