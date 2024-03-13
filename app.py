@@ -138,12 +138,6 @@ def do_sample(
     return video_path
 
 
-@spaces.GPU
-def change_model_params(model, min_cfg, max_cfg):
-    model.sampler.guider.max_scale = max_cfg
-    model.sampler.guider.min_scale = min_cfg
-
-
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # download
@@ -242,7 +236,8 @@ with gr.Blocks(title="V3D", theme=gr.themes.Monochrome()) as demo:
         outputs=[output_video],
     )
     def _(image, border_ratio, min_guidance, max_guidance, decoding_t):
-        change_model_params(model, min_guidance, max_guidance)
+        model.sampler.guider.max_scale = max_cfg
+        model.sampler.guider.min_scale = min_cfg
         return do_sample(
             image,
             num_frames,
