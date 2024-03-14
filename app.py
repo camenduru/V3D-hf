@@ -40,9 +40,11 @@ def do_sample(
     border_ratio,
     ignore_alpha,
     output_folder,
+    seed,
 ):
     # if image.mode == "RGBA":
     #     image = image.convert("RGB")
+    torch.manual_seed(seed)
     image = Image.fromarray(image)
     w, h = image.size
 
@@ -213,6 +215,7 @@ with gr.Blocks(title="V3D", theme=gr.themes.Monochrome()) as demo:
                 maximum=0.5,
                 step=0.05,
             )
+            seed_input = gr.Number(value=42)
             decoding_t_slider = gr.Slider(
                 value=1,
                 label="Number of Decoding frames",
@@ -224,14 +227,14 @@ with gr.Blocks(title="V3D", theme=gr.themes.Monochrome()) as demo:
                 value=3.5,
                 label="Min CFG Value",
                 minimum=0.05,
-                maximum=0.5,
+                maximum=5,
                 step=0.05,
             )
             max_guidance_slider = gr.Slider(
                 value=3.5,
                 label="Max CFG Value",
                 minimum=0.05,
-                maximum=0.5,
+                maximum=5,
                 step=0.05,
             )
             run_button = gr.Button(value="Run V3D")
@@ -246,10 +249,11 @@ with gr.Blocks(title="V3D", theme=gr.themes.Monochrome()) as demo:
             min_guidance_slider,
             max_guidance_slider,
             decoding_t_slider,
+            seed_input,
         ],
         outputs=[output_video],
     )
-    def _(image, border_ratio, min_guidance, max_guidance, decoding_t):
+    def _(image, border_ratio, min_guidance, max_guidance, decoding_t, seed):
         model.sampler.guider.max_scale = max_guidance
         model.sampler.guider.min_scale = min_guidance
         return do_sample(
@@ -260,6 +264,7 @@ with gr.Blocks(title="V3D", theme=gr.themes.Monochrome()) as demo:
             border_ratio,
             False,
             output_folder,
+            seed,
         )
 
 
